@@ -44,5 +44,3 @@ class RoleBasedRedirectMiddleware:
             pass
         
         return self.get_response(request)
-    
-    

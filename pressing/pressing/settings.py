@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'backend'
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # This should be at the top
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -75,7 +77,7 @@ TEMPLATES = [
     },
 ]
 
-AUTH_USER_MODEL = 'backend.User'  # Replace 'mentorcam' with your app name
+AUTH_USER_MODEL = 'backend.User'  # Replace  with your app name
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -88,6 +90,12 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Allow requests from your frontend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Adjust for your Vite dev server
+    "http://localhost:3000",
+    # Add your production URL when deployed
+]
 
 WSGI_APPLICATION = 'pressing.wsgi.application'
 
@@ -117,10 +125,18 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-# Twilio Settings
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
-TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
-TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
+
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'yvangodimomo@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = 'pzls apph esje cgdl'  # Your app password or account password
+DEFAULT_FROM_EMAIL = 'yvangodimomo@gmail.com'
+ADMIN_EMAIL = 'yvangodimomo@gmail.com'  # Email where contact form submissions will be sent
+
 
 # OTP Settings
 OTP_EXPIRY_TIME = 10  # minutes
@@ -136,7 +152,7 @@ MIDDLEWARE += [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'momo.sqlite3',
     }
 }
 
