@@ -453,7 +453,7 @@ def user_stats(request):
     """Get user statistics (counts by role, etc.)"""
     total_users = User.objects.count()
     active_users = User.objects.filter(is_active=True).count()
-    verified_users = User.objects.filter(is_phone_verified=True).count()
+    verified_users = User.objects.filter(is_email_verified=True).count()
     
     role_counts = {
         'client': User.objects.filter(role='client').count(),
@@ -467,6 +467,7 @@ def user_stats(request):
         'verified_users': verified_users,
         'role_counts': role_counts
     })
+
 
 # Email configuration - use the existing yagmail setup
 username = "yvangodimomo@gmail.com"

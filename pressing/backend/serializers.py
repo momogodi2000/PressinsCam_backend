@@ -101,7 +101,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'phone_number', 'email', 'first_name', 'last_name', 
-                  'role', 'is_phone_verified', 'is_active', 'password',
+                  'role', 'is_email_verified', 'is_active', 'password',
                   'date_joined', 'last_login']
     
     def create(self, validated_data):

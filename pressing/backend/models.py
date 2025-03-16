@@ -39,7 +39,7 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='client')
     is_email_verified = models.BooleanField(default=False)
-    
+        
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
