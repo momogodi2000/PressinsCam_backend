@@ -6,7 +6,7 @@ from .views import (ContactView, CurrentUserProfileView, RegisterView, VerifyOTP
 from rest_framework_simplejwt.views import TokenRefreshView
 from backend import views
 from rest_framework.routers import DefaultRouter
-from .views import ContactAdminViewSet, delete_contact, ContactResponseView
+from .views import ContactAdminViewSet, ContactResponseView
 
 
 # Create router for viewsets
@@ -37,8 +37,9 @@ urlpatterns = [
 
     # Contact and Newsletter URLs
     path('contact/', ContactView.as_view(), name='contact'),
-    path('admin/contacts/<int:pk>/delete/', delete_contact, name='admin-delete-contact'),
+    #path('admin/contacts/<int:pk>/delete/', delete_contact, name='admin-delete-contact'),
     path('admin/contacts/<int:pk>/respond/', ContactResponseView.as_view(), name='admin-respond-contact'),
+
 
     
     # Include the router URLs

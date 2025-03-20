@@ -479,9 +479,9 @@ class IsAdminUser(IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(request, view) and request.user.role == 'admin'
 
-class ContactAdminViewSet(viewsets.ReadOnlyModelViewSet):
+class ContactAdminViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for admin users to view all contact messages
+    ViewSet for admin users to manage all contact messages
     """
     queryset = Contact.objects.all().order_by('-created_at')
     serializer_class = ContactSerializer
@@ -494,6 +494,7 @@ class ContactAdminViewSet(viewsets.ReadOnlyModelViewSet):
         name = self.request.query_params.get('name', None)
         email = self.request.query_params.get('email', None)
         subject = self.request.query_params.get('subject', None)
+        responded = self.request.query_params.get('responded', None)
         
         if name:
             queryset = queryset.filter(name__icontains=name)
@@ -501,21 +502,24 @@ class ContactAdminViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(email__icontains=email)
         if subject:
             queryset = queryset.filter(subject__icontains=subject)
+        if responded is not None:
+            queryset = queryset.filter(is_responded=(responded.lower() == 'true'))
             
         return queryset
 
-@api_view(['DELETE'])
-@permission_classes([IsAdminUser])
-def delete_contact(request, pk):
-    """
-    Delete a specific contact message by ID
-    """
-    contact = get_object_or_404(Contact, pk=pk)
-    contact.delete()
-    return Response(
-        {'message': 'Contact message deleted successfully'},
-        status=status.HTTP_204_NO_CONTENT
-    )
+# This function can be removed since it's now handled by the ModelViewSet
+# @api_view(['DELETE'])
+# @permission_classes([IsAdminUser])
+# def delete_contact(request, pk):
+#     """
+#     Delete a specific contact message by ID
+#     """
+#     contact = get_object_or_404(Contact, pk=pk)
+#     contact.delete()
+#     return Response(
+#         {'message': 'Contact message deleted successfully'},
+#         status=status.HTTP_204_NO_CONTENT
+#     )
 
 class ContactResponseView(APIView):
     """
@@ -569,4 +573,3 @@ class ContactResponseView(APIView):
                 )
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
