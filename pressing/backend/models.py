@@ -2,6 +2,13 @@ from django.utils import timezone  # Correct import
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings  # Add this import at the top
+from django.db import models
+from django.utils import timezone
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils.translation import gettext_lazy as _
+
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -69,3 +76,42 @@ class Contact(models.Model):
     def __str__(self):
         return f"{self.name} - {self.subject}"
     
+class DeliveryPlan(models.Model):
+    STATUS_CHOICES = [
+        ('Planifié', 'Planifié'),
+        ('En cours', 'En cours'),
+        ('Terminé', 'Terminé')
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pickup_date = models.DateField()
+    pickup_time = models.CharField(max_length=20)
+    delivery_date = models.DateField()
+    delivery_time = models.CharField(max_length=20)
+    address = models.TextField()
+    is_express_service = models.BooleanField(default=False)
+    special_instructions = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Planifié')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Delivery Plan {self.id} - {self.address}"
+
+class SavedAddress(models.Model):
+    CITY_CHOICES = [
+        ('douala', 'Douala'),
+        ('yaounde', 'Yaoundé')
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=20, choices=CITY_CHOICES)
+    quarter = models.CharField(max_length=100)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.street}, {self.quarter}, {self.city}"
+    
+

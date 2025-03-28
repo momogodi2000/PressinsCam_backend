@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path, include
 from django.conf.urls.static import static
-from .views import (ContactView, CurrentUserProfileView, RegisterView, VerifyOTPView, LoginView, ResendOTPView, RoleBasedRedirectView
+from .views import (ContactView, CurrentUserProfileView, DeliveryPlanViewSet, RegisterView, SavedAddressViewSet, VerifyOTPView, LoginView, ResendOTPView, RoleBasedRedirectView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 from backend import views
@@ -12,6 +12,8 @@ from .views import ContactAdminViewSet, ContactResponseView
 # Create router for viewsets
 router = DefaultRouter()
 router.register(r'admin/contacts', ContactAdminViewSet)
+router.register(r'delivery-plans', DeliveryPlanViewSet, basename='delivery-plan')
+router.register(r'saved-addresses', SavedAddressViewSet, basename='saved-address')
 
 
 urlpatterns = [

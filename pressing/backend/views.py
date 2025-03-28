@@ -35,7 +35,11 @@ from .models import Contact
 from .serializers import ContactSerializer, ContactResponseSerializer
 from .permissions import IsAdminUser
 from .serializers import UserRegistrationSerializer, UserLoginSerializer
-
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import DeliveryPlan, SavedAddress
+from .serializers import DeliveryPlanSerializer, SavedAddressSerializer
 
 class RegisterView(APIView):
     def post(self, request):
@@ -507,20 +511,6 @@ class ContactAdminViewSet(viewsets.ModelViewSet):
             
         return queryset
 
-# This function can be removed since it's now handled by the ModelViewSet
-# @api_view(['DELETE'])
-# @permission_classes([IsAdminUser])
-# def delete_contact(request, pk):
-#     """
-#     Delete a specific contact message by ID
-#     """
-#     contact = get_object_or_404(Contact, pk=pk)
-#     contact.delete()
-#     return Response(
-#         {'message': 'Contact message deleted successfully'},
-#         status=status.HTTP_204_NO_CONTENT
-#     )
-
 class ContactResponseView(APIView):
     """
     View for admin users to respond to contact messages
@@ -573,3 +563,66 @@ class ContactResponseView(APIView):
                 )
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeliveryPlanViewSet(viewsets.ModelViewSet):
+    queryset = DeliveryPlan.objects.all()
+    serializer_class = DeliveryPlanSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+    @action(detail=False, methods=['GET'])
+    def history(self, request):
+        # Get latest 10 delivery plans for the user
+        history = DeliveryPlan.objects.filter(user=request.user).order_by('-created_at')[:10]
+        serializer = self.get_serializer(history, many=True)
+        return Response(serializer.data)
+    
+ # In your views.py
+    def create(self, request, *args, **kwargs):
+        print(f"Received data: {request.data}")
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(f"Validation errors: {serializer.errors}")
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+         
+class SavedAddressViewSet(viewsets.ModelViewSet):
+    queryset = SavedAddress.objects.all()
+    serializer_class = SavedAddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return saved addresses for the current user
+        return SavedAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically assign the current user to the saved address
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['GET'])
+    def city_quarters(self, request):
+        # Return quarters for a specific city
+        city = request.query_params.get('city', '')
+        quarters = {
+            'douala': [
+                'Bonapriso', 'Bonanjo', 'Akwa', 'Deido', 'Bali', 
+                'New Bell', 'Bonaberi', 'Makepe', 'Bonamoussadi', 
+                'Logpom', 'PK 14'
+            ],
+            'yaounde': [
+                'Bastos', 'Centre Ville', 'Nlongkak', 'Etoa-Meki', 'Mvan', 
+                'Mvog-Mbi', 'Biyem-Assi', 'Essos', 'Emana', 'Mimboman'
+            ]
+        }
+        return Response(quarters.get(city.lower(), []))
+
+

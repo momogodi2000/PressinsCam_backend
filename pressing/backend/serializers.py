@@ -1,9 +1,14 @@
+from datetime import timezone
 from rest_framework import serializers
 from .models import Contact, User, OTP
 from django.contrib.auth import authenticate
 import random
 from rest_framework import serializers
 from .models import Contact
+from django.utils import timezone  # Correct import for Django's timezone
+from rest_framework import serializers
+from .models import DeliveryPlan, SavedAddress
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -93,7 +98,6 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contact
         fields = ['name', 'email', 'subject', 'message']
 
-
 class AdminUserSerializer(serializers.ModelSerializer):
     """Serializer for admin operations on User model"""
     password = serializers.CharField(write_only=True, required=False)
@@ -130,3 +134,37 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
 class ContactResponseSerializer(serializers.Serializer):
     response = serializers.CharField(required=False)
+
+
+class SavedAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedAddress
+        fields = ['id', 'name', 'street', 'city', 'quarter', 'is_default']
+
+class DeliveryPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryPlan
+        fields = [
+            'id', 'pickup_date', 'pickup_time', 
+            'delivery_date', 'delivery_time', 
+            'address', 'is_express_service', 
+            'special_instructions', 'status', 
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        
+    def validate_pickup_date(self, value):
+        """Ensure pickup date is not in the past"""
+        if value < timezone.now().date():
+            raise serializers.ValidationError("Pickup date cannot be in the past")
+        return value
+        
+    def validate(self, data):
+        """Ensure delivery date is after pickup date"""
+        if data['delivery_date'] <= data['pickup_date']:
+            raise serializers.ValidationError({
+                'delivery_date': "Delivery date must be after pickup date"
+            })
+        return data
+
+
